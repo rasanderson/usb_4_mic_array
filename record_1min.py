@@ -2,7 +2,6 @@ from ctypes import *
 from contextlib import contextmanager
 import pyaudio
 import wave
-import numpy as np
 
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
@@ -25,11 +24,14 @@ RESPEAKER_WIDTH = 2
 # run getDeviceInfo.py to get index
 RESPEAKER_INDEX = 2  # refer to input device id
 CHUNK = 1024
-RECORD_SECONDS = 10
+RECORD_SECONDS = 60
 WAVE_OUTPUT_FILENAME = "/home/nras/output_recording.wav"
 
 with noalsaerr():
     p = pyaudio.PyAudio()
+
+format=p.get_format_from_width(RESPEAKER_WIDTH)
+#print(format)
 
 stream = p.open(
             rate=RESPEAKER_RATE,
@@ -44,8 +46,7 @@ frames = []
 
 for i in range(0, int(RESPEAKER_RATE / CHUNK * RECORD_SECONDS)):
     data = stream.read(CHUNK)
-    a = np.frombuffer(data, dtype=np.int16)[0::6]
-    frames.append(a.tobytes())
+    frames.append(data)
 
 #print("* done recording")
 

@@ -1,0 +1,4 @@
+#!/bin/env bash
+rm -rf /home/nras/output_recording.wav
+rm -rf /home/nras/output_doa.csv
+(sudo python /home/nras/usb_4_mic_array/record_1min.py) & (sudo python /home/nras/usb_4_mic_array/doa_datetime_1min.py) 
