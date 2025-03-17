@@ -1,0 +1,3 @@
+#!/bin/env bash
+python /home/nras/usb_4_mic_array/shutdown_display.py 
+sudo shutdown -h now
