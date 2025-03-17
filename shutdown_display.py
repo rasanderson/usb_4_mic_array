@@ -16,6 +16,8 @@ pijuice = PiJuice()
 
 epd = epd3in52.EPD()
 epd.init()
+epd.display_NUM(epd.WHITE)
+epd.lut_GC()
 font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
 font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
 font30 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 40)
