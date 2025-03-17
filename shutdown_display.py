@@ -1,9 +1,11 @@
 #!/usr/bin/python
 import sys
 import os
-current_dir = os.path.dirname(os.path.realpath(__file__))
-libdir = os.path.join(current_dir, 'eink_files/lib')
-picdir = os.path.join(current_dir, 'eink_files/pic')
+#current_dir = os.path.dirname(os.path.realpath(__file__))
+#libdir = os.path.join(current_dir, 'eink_files/lib')
+#picdir = os.path.join(current_dir, 'eink_files/pic')
+libdir = '/home/nras/usb_4_mic_array/eink_files/lib'
+picdir = '/home/nras/usb_4_mic_array/eink_files/pic'
 if os.path.exists(libdir):
     sys.path.append(libdir)
 
@@ -38,3 +40,5 @@ draw = ImageDraw.Draw(image)
 # Display on e-ink screen
 epd.display(epd.getbuffer(image))
 epd.refresh()
+shutdown_command = "sudo shutdown -h now"
+os.system(shutdown_command)
