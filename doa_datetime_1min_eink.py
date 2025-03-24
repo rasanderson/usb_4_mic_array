@@ -22,8 +22,6 @@ from waveshare_epd import epd3in52
 import time
 from PIL import Image,ImageDraw,ImageFont
 import traceback
-from pijuice import PiJuice
-pijuice = PiJuice()
 
 epd = epd3in52.EPD()
 epd.init()
@@ -36,8 +34,9 @@ font30 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 40)
 
 #output_file = "/home/nras/output_doa.csv"
 now = datetime.datetime.now()
-timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+timestamp = now.strftime("%Y-%m-%d_%H-%M")
 output_file = f"/home/audio/{timestamp}.csv"
+output_wav = f"/home/audio/{timestamp}.wav"
 
 # Find all devices
 #dev = usb.core.find(idVendor=VENDOR_ID, idProduct=PRODUCT_ID)
@@ -90,3 +89,12 @@ with open(output_file, "a") as outfile:
                     epd.refresh()
             except KeyboardInterrupt:
                 break
+
+image = Image.new('1', (epd.height, epd.width), 255)
+draw = ImageDraw.Draw(image)
+draw.text((10,20), f"Sound direction angles saved to:", font = font24, fill=0)
+draw.text((10,50), f"{output_file}", font = font18, fill=0)
+draw.text((10,90), f"Audio data saved to:", font = font24, fill=0)
+draw.text((10,120), f"{output_wav}", font = font18, fill=0)
+epd.display(epd.getbuffer(image))
+epd.refresh()
