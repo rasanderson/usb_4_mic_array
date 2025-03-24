@@ -34,7 +34,10 @@ font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
 font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
 font30 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 40)
 
-output_file = "/home/nras/output_doa.csv"
+#output_file = "/home/nras/output_doa.csv"
+now = datetime.datetime.now()
+timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+output_file = f"/home/audio/{timestamp}.csv"
 
 # Find all devices
 #dev = usb.core.find(idVendor=VENDOR_ID, idProduct=PRODUCT_ID)
