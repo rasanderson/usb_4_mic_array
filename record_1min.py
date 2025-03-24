@@ -2,6 +2,7 @@ from ctypes import *
 from contextlib import contextmanager
 import pyaudio
 import wave
+import datetime
 
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
@@ -25,7 +26,11 @@ RESPEAKER_WIDTH = 2
 RESPEAKER_INDEX = 2  # refer to input device id
 CHUNK = 1024
 RECORD_SECONDS = 60
-WAVE_OUTPUT_FILENAME = "/home/nras/output_recording.wav"
+now = datetime.datetime.now()
+timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+output_file = f"/home/audio/{timestamp}.wav"
+#WAVE_OUTPUT_FILENAME = "/home/nras/output_recording.wav"
+WAVE_OUTPUT_FILENAME = output_file
 
 with noalsaerr():
     p = pyaudio.PyAudio()
