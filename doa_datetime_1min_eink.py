@@ -45,21 +45,44 @@ devices = list(usb.core.find(find_all=True, idVendor=VENDOR_ID, idProduct=PRODUC
 #for device in devices:
 #    print(f"Microphone found: Bus {device.bus} Device {device.address}")
 
+# Need to chagne next 8 lines as device numbers not always
+# consistent between different Rpi machines
+#with open('/dev/bus/usb/001/008', 'r') as file:
+#    content = file.read().strip()
+#    print(content)
+#    usb_bl = int(file.read().strip())
+#with open('/dev/bus/usb/001/006', 'r') as file:
+#    usb_br = int(file.read().strip())
+#with open('/sys/bus/usb/001/004', 'r') as file:
+#    usb_tl = int(file.read().strip())
+#with open('/sys/bus/usb/001/005', 'r') as file:
+#    usb_tr = int(file.read().strip())
+#devices[0].address = usb_bl
+#devices[1].address = usb_br
+#devices[2].address = usb_tl
+#devices[3].address = usb_tr
 
-with open('/sys/bus/usb/devices/1-1.3/devnum', 'r') as file:
-    usb_bl = int(file.read().strip())
-with open('/sys/bus/usb/devices/1-1.5/devnum', 'r') as file:
-    usb_br = int(file.read().strip())
-with open('/sys/bus/usb/devices/1-1.2/devnum', 'r') as file:
-    usb_tl = int(file.read().strip())
-with open('/sys/bus/usb/devices/1-1.4/devnum', 'r') as file:
-    usb_tr = int(file.read().strip())
+# Revised using pyudev
+#context = pyudev.Context()
+#devices = []
+# Find ReSpeaker microphones
+#for device in context.list_devices(subsystem='usb'):
+#    if 'ID_MODEL' in device and 'ReSpeaker' in device.get('ID_MODEL'):
+#        devices.append(device)
+#if len(devices) != 4:
+#    raise Exception("Expected 4 microphones but found {}".format(len(devices)))
+# Assign addresses
+#for i, device in enumerate(devices):
+#    devices[i].address = int(device.device_number)
 
-devices[0].address = usb_bl
-devices[1].address = usb_br
-devices[2].address = usb_tl
-devices[3].address = usb_tr
 
+# Modified usb.core approach
+devices = list(usb.core.find(find_all=True, idVendor=VENDOR_ID, idProduct=PRODUCT_ID))
+if len(devices) != 4:
+    raise Exception("Expected 4 microphones but found {}".format(len(devices)))
+for i, device in enumerate(devices):
+    devices[i].address - device.address
+                              
 start_time = time.time()
 
 with open(output_file, "a") as outfile:
