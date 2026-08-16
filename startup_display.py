@@ -37,7 +37,7 @@ time.sleep(60)
 
 # Get battery charge info
 charge = pijuice.status.GetChargeLevel()['data']
-message = f"System ready to record. Charge: {charge}%"
+message = f"Ready to record. Charge: {charge}%"
 
 # Create a new image
 image = Image.new('1', (epd.height, epd.width), 255)
