@@ -1,0 +1,23 @@
+Allow non-root use
+
+Sometime the RPi will block use of the doa scripts unless root access. In theory
+this should resolve it:
+
+1. Create a udev rule so plugdev from python can use it:
+
+sudo tee /etc/udev/rules.d/99-respeaker.rules >/dev/null <<'EOF'
+SUBSYSTEM=="usb", ATTR{idVendor}=="2886", ATTR{idProduct}=="0018", MODE="0660", GROUP="plugdev"
+EOF
+
+sudo usermod -aG plugdev nras
+sudo udevadm control --reload-rules
+sudo udevadm trigger --subsystem-match=usb --attr-match=idVendor=2886
+
+
+2. Unplug/replug all microphones, logout and or reboot so nras has new udev
+membership
+
+3. Confirm this with
+
+id -nG
+python doa_datetime_1min_eink.py
