@@ -61,16 +61,19 @@ def _alsa_card_by_position(mics):
     return card_by_position
 
 
-def get_audio_index_by_position(pyaudio_instance=None):
+def get_audio_index_by_position(pyaudio_instance=None, mics=None):
     """Map position -> PyAudio input device index for the 4 ReSpeaker boards.
 
     Uses the same USB port_numbers-based identification as get_mics_by_position(),
     correlated to ALSA card numbers via sysfs, then to PyAudio device indices
     (since all 4 boards share an identical PyAudio device name).
+
+    Pass an already-resolved `mics` dict (from get_mics_by_position()) to avoid
+    enumerating the USB devices a second time.
     """
     import pyaudio
 
-    mics = get_mics_by_position()
+    mics = mics if mics is not None else get_mics_by_position()
     card_by_position = _alsa_card_by_position(mics)
 
     missing = [position for position in mics if position not in card_by_position]
