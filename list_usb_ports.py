@@ -13,9 +13,9 @@ PRODUCT_ID = 0x0018
 # Confirmed positions for this Pi (see mic_ports.PORT_MAP); re-verify if
 # mics are moved to different physical ports or on a different Pi.
 KNOWN_DEFAULTS = {
-    (1, 1, 2): "top_left",
-    (1, 3): "top_right",
-    (1, 1, 3): "bottom_left",
+    (1, 3): "top_left",
+    (1, 1): "top_right",
+    (1, 4): "bottom_left",
     (1, 2): "bottom_right",
 }
 

@@ -81,16 +81,30 @@ with noalsaerr():
 
 index_by_position = get_audio_index_by_position(pyaudio_instance=p, mics=mics)
 
-streams = {
-    position: p.open(
-        rate=RESPEAKER_RATE,
-        format=p.get_format_from_width(RESPEAKER_WIDTH),
-        channels=RESPEAKER_CHANNELS,
-        input=True,
-        input_device_index=index,
-    )
-    for position, index in index_by_position.items()
-}
+streams = {}
+try:
+    for position, index in index_by_position.items():
+        try:
+            streams[position] = p.open(
+                rate=RESPEAKER_RATE,
+                format=p.get_format_from_width(RESPEAKER_WIDTH),
+                channels=RESPEAKER_CHANNELS,
+                input=True,
+                input_device_index=index,
+            )
+        except OSError as exc:
+            raise OSError(
+                f"Failed to open stream for {position} (device index={index}): {exc}"
+            ) from exc
+        # Opening 4 UAC streams back-to-back can exceed the USB
+        # controller's bandwidth allocation on the Pi 4B; a short pause
+        # lets each device finish claiming its isochronous bandwidth.
+        time.sleep(0.2)
+except OSError:
+    for stream in streams.values():
+        stream.close()
+    p.terminate()
+    raise
 
 frames_by_position = {position: [] for position in index_by_position}
 stop_event = threading.Event()
@@ -102,10 +116,17 @@ def record(position):
     for _ in range(0, int(RESPEAKER_RATE / CHUNK * RECORD_SECONDS)):
         if stop_event.is_set():
             break
-        # exception_on_overflow=False: keep recording (with a gap) instead of
-        # crashing the thread when the DOA/e-ink work on the main thread
-        # briefly starves this thread of CPU time.
-        frames.append(stream.read(CHUNK, exception_on_overflow=False))
+        try:
+            # exception_on_overflow=False: keep recording (with a gap) instead of
+            # crashing the thread when the DOA/e-ink work on the main thread
+            # briefly starves this thread of CPU time.
+            frames.append(stream.read(CHUNK, exception_on_overflow=False))
+        except OSError as exc:
+            # A transient USB/ALSA glitch (e.g. bandwidth contention between
+            # the 4 simultaneous streams) can still raise here even with
+            # exception_on_overflow=False; skip the chunk instead of letting
+            # it kill this thread and truncate the whole recording.
+            print(f"[{position}] stream read error, skipping chunk: {exc}")
 
 
 audio_threads = [threading.Thread(target=record, args=(position,)) for position in index_by_position]

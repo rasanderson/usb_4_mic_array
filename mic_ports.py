@@ -14,9 +14,9 @@ VENDOR_ID = 0x2886
 PRODUCT_ID = 0x0018
 
 PORT_MAP = {
-    "top_left": (1, 1, 2),
-    "top_right": (1, 3),
-    "bottom_left": (1, 1, 3),
+    "top_left": (1, 3),
+    "top_right": (1, 1),
+    "bottom_left": (1, 4),
     "bottom_right": (1, 2),
 }
 
