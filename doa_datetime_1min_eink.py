@@ -3,6 +3,7 @@ import usb.core
 import usb.util
 import datetime
 import time
+from mic_ports import get_mics_by_position
 
 # ReSpeaker USB Mic Array IDs
 VENDOR_ID = 0x2886
@@ -38,60 +39,17 @@ timestamp = now.strftime("%Y-%m-%d_%H-%M")
 output_file = f"/home/audio/{timestamp}.csv"
 output_wav = f"/home/audio/{timestamp}.wav"
 
-# Find all devices
-#dev = usb.core.find(idVendor=VENDOR_ID, idProduct=PRODUCT_ID)
-devices = list(usb.core.find(find_all=True, idVendor=VENDOR_ID, idProduct=PRODUCT_ID))
+mics = get_mics_by_position()
 
-#for device in devices:
-#    print(f"Microphone found: Bus {device.bus} Device {device.address}")
-
-# Need to chagne next 8 lines as device numbers not always
-# consistent between different Rpi machines
-#with open('/dev/bus/usb/001/008', 'r') as file:
-#    content = file.read().strip()
-#    print(content)
-#    usb_bl = int(file.read().strip())
-#with open('/dev/bus/usb/001/006', 'r') as file:
-#    usb_br = int(file.read().strip())
-#with open('/sys/bus/usb/001/004', 'r') as file:
-#    usb_tl = int(file.read().strip())
-#with open('/sys/bus/usb/001/005', 'r') as file:
-#    usb_tr = int(file.read().strip())
-#devices[0].address = usb_bl
-#devices[1].address = usb_br
-#devices[2].address = usb_tl
-#devices[3].address = usb_tr
-
-# Revised using pyudev
-#context = pyudev.Context()
-#devices = []
-# Find ReSpeaker microphones
-#for device in context.list_devices(subsystem='usb'):
-#    if 'ID_MODEL' in device and 'ReSpeaker' in device.get('ID_MODEL'):
-#        devices.append(device)
-#if len(devices) != 4:
-#    raise Exception("Expected 4 microphones but found {}".format(len(devices)))
-# Assign addresses
-#for i, device in enumerate(devices):
-#    devices[i].address = int(device.device_number)
-
-
-# Modified usb.core approach
-devices = list(usb.core.find(find_all=True, idVendor=VENDOR_ID, idProduct=PRODUCT_ID))
-if len(devices) != 4:
-    raise Exception("Expected 4 microphones but found {}".format(len(devices)))
-for i, device in enumerate(devices):
-    devices[i].address - device.address
-                              
 start_time = time.time()
 
 with open(output_file, "a") as outfile:
     print("DateTime, ElapsedTime, DOA1bl, DOA2br, DOA3tl, DOA4tr", file=outfile)
-    if devices:
-        Mic1_tuning = Tuning(devices[0])
-        Mic2_tuning = Tuning(devices[1])
-        Mic3_tuning = Tuning(devices[2])
-        Mic4_tuning = Tuning(devices[3])
+    if mics:
+        Mic1_tuning = Tuning(mics["bottom_left"])
+        Mic2_tuning = Tuning(mics["bottom_right"])
+        Mic3_tuning = Tuning(mics["top_left"])
+        Mic4_tuning = Tuning(mics["top_right"])
         elapsed_seconds = time.time() - start_time
         now = datetime.datetime.now()
         print(now,", ",f"{elapsed_seconds:.2f}", ", ", Mic1_tuning.direction, ", ", Mic2_tuning.direction, ", ", Mic3_tuning.direction,", ", Mic4_tuning.direction, file=outfile)
