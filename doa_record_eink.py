@@ -22,11 +22,19 @@ if os.path.exists(libdir):
 from waveshare_epd import epd3in52
 from PIL import Image, ImageDraw, ImageFont
 
-RECORD_SECONDS = 60
-RESPEAKER_RATE = 16000
-RESPEAKER_CHANNELS = 6
-RESPEAKER_WIDTH = 2
+RECORD_SECONDS = 60     # Duration of wav and doa (csv) files
+RESPEAKER_RATE = 16000  # 16 kHz sample rate
+RESPEAKER_CHANNELS = 6  # Each unit records DSP, 4 mic raw audio, merged audio
+RESPEAKER_WIDTH = 2  # Sample width in bytes per sample (2 bytes=16 bit audio)
+
+# CHUNK is buffer size: how many audio frames are read or written in a single
+# call to stream.read or write. Trade-offs: small CHUNK=more frequent, smaller
+# reads with lower latency but higher cpu/thread overload and risk of input
+# overflow. high CHUNK=fewer, bigger reads, more tolerant of cpu delays, but
+# slightly coarser timing resolution.
 CHUNK = 1024
+
+DOA_POLL_INTERVAL_SECONDS = 0.5  # Intervals for csv records
 # maps mic_ports position names to the filename suffixes used for wav output
 POSITION_SUFFIX = {
     "top_left": "tl",
@@ -120,7 +128,7 @@ with open(output_file, "a") as outfile:
             elapsed_seconds = time.time() - start_time
             now = datetime.datetime.now()
             print(now, ", ", f"{elapsed_seconds:.2f}", ", ", Mic1_tuning.direction, ", ", Mic2_tuning.direction, ", ", Mic3_tuning.direction, ", ", Mic4_tuning.direction, file=outfile)
-            time.sleep(0.5)
+            time.sleep(DOA_POLL_INTERVAL_SECONDS)
             if int(elapsed_seconds) % 5 == 0:
                 image = Image.new('1', (epd.height, epd.width), 255)
                 draw = ImageDraw.Draw(image)
