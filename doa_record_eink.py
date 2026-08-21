@@ -43,6 +43,21 @@ POSITION_SUFFIX = {
     "bottom_right": "br",
 }
 
+# Which units to save wav audio from; DOA is always recorded for all 4
+# regardless of this list (the USB controller can't handle 4 simultaneous
+# wav streams). Add/remove positions here to change how many are recorded.
+# e.g. for a 2-mic wav record, use ["bottom_left", "bottom_right"].
+# Maximum of 3 simultaneous wav streams is recommended for a Pi 4B unless
+# an external USB hub controller added.
+WAV_RECORD_POSITIONS = ["top_left"]
+
+_invalid_positions = [p for p in WAV_RECORD_POSITIONS if p not in POSITION_SUFFIX]
+if _invalid_positions:
+    raise ValueError(
+        f"WAV_RECORD_POSITIONS contains unknown position(s) {_invalid_positions}; "
+        f"valid positions are {list(POSITION_SUFFIX)}"
+    )
+
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
 def py_error_handler(filename, line, function, err, fmt):
@@ -71,7 +86,8 @@ now = datetime.datetime.now()
 timestamp = now.strftime("%Y-%m-%d_%H-%M")
 output_file = f"/home/audio/{timestamp}.csv"
 output_wavs = {
-    position: f"/home/audio/{timestamp}_{suffix}.wav" for position, suffix in POSITION_SUFFIX.items()
+    position: f"/home/audio/{timestamp}_{POSITION_SUFFIX[position]}.wav"
+    for position in WAV_RECORD_POSITIONS
 }
 
 mics = get_mics_by_position()
@@ -79,7 +95,8 @@ mics = get_mics_by_position()
 with noalsaerr():
     p = pyaudio.PyAudio()
 
-index_by_position = get_audio_index_by_position(pyaudio_instance=p, mics=mics)
+wav_mics = {position: mics[position] for position in WAV_RECORD_POSITIONS}
+index_by_position = get_audio_index_by_position(pyaudio_instance=p, mics=wav_mics)
 
 streams = {}
 try:
@@ -186,9 +203,7 @@ draw = ImageDraw.Draw(image)
 draw.text((10, 10), "Sound direction angles saved to:", font=font18, fill=0)
 draw.text((10, 30), f"{output_file}", font=font18, fill=0)
 draw.text((10, 55), "Audio data saved to:", font=font18, fill=0)
-draw.text((10, 75), f"{output_wavs['top_left']}", font=font18, fill=0)
-draw.text((10, 95), f"{output_wavs['top_right']}", font=font18, fill=0)
-draw.text((10, 115), f"{output_wavs['bottom_left']}", font=font18, fill=0)
-draw.text((10, 135), f"{output_wavs['bottom_right']}", font=font18, fill=0)
+for line_index, wav_path in enumerate(output_wavs.values()):
+    draw.text((10, 75 + line_index * 20), f"{wav_path}", font=font18, fill=0)
 epd.display(epd.getbuffer(image))
 epd.refresh()
